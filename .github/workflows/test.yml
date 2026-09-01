@@ -1,0 +1,29 @@
+name: Go Test
+
+# The 'on' block tells GitHub exactly when to run this workflow
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+
+    - name: Set up Go 1.23
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23'
+        check-latest: true
+
+    - name: Get dependencies
+      run: go mod download
+
+    - name: Run Tests with Race Detector
+      run: go test -v -race ./...
