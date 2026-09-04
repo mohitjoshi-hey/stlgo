@@ -23,7 +23,6 @@ func TestSearch(t *testing.T) {
 		if ind := UpperBound(s, 23); ind != 6 {
 			t.Errorf("UpperBound function is wrong, expected 6, got %d", ind)
 		}
-		// Edge case: target larger than all elements
 		if ind := UpperBound(s, 99); ind != len(s) {
 			t.Errorf("Expected %d for target larger than all elements, got %d", len(s), ind)
 		}

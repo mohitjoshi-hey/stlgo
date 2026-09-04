@@ -2,7 +2,6 @@ package algo
 
 import "cmp"
 
-// If all elements are strictly less than val, it returns len(slice).
 func LowerBound[T cmp.Ordered](slice []T, val T) int {
 	low := 0
 	high := len(slice)
@@ -19,7 +18,6 @@ func LowerBound[T cmp.Ordered](slice []T, val T) int {
 	return low
 }
 
-// If no element is strictly greater than val, it returns len(slice).
 func UpperBound[T cmp.Ordered](slice []T, val T) int {
 	low := 0
 	high := len(slice)
