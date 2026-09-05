@@ -8,6 +8,7 @@ import (
 func TestSortAndSelect(t *testing.T) {
 	t.Run("Testing the NthElement function", func(t *testing.T) {
 		original := []int{42, 17, 93, 8, 55, 23, 67, 31, 88, 12, 76, 5, 99, 34, 61}
+
 		sorted := make([]int, len(original))
 		copy(sorted, original)
 		slices.Sort(sorted)
@@ -21,19 +22,19 @@ func TestSortAndSelect(t *testing.T) {
 				t.Fatalf("Index %d: expected ok=true, got false", k)
 			}
 
-			// 1. Check exact value
+			//Checking exact value
 			if val != sorted[k] || trial[k] != sorted[k] {
 				t.Fatalf("Index %d: expected %d, got val=%d, trial[k]=%d", k, sorted[k], val, trial[k])
 			}
 
-			// 2. Check left invariant (<= pivot)
+			//Check left invariant (<= pivot)
 			for i := 0; i < k; i++ {
 				if trial[i] > trial[k] {
 					t.Fatalf("Invariant broken at k=%d: left element trial[%d]=%d > pivot=%d", k, i, trial[i], trial[k])
 				}
 			}
 
-			// 3. Check right invariant (>= pivot)
+			// Check right invariant (>= pivot)
 			for i := k + 1; i < len(trial); i++ {
 				if trial[i] < trial[k] {
 					t.Fatalf("Invariant broken at k=%d: right element trial[%d]=%d < pivot=%d", k, i, trial[i], trial[k])
