@@ -50,16 +50,42 @@ func TestMathFunctions(t *testing.T) {
 	})
 
 	t.Run("Testing IsEven & IsOdd Functionn", func(t *testing.T) {
-		got := IsEven(22);
-		want := true;
-		if got != want {
+		if !IsEven(22) || IsEven(25) {
 			t.Errorf("IsEven function has a fault, expected true, got false");
 		}
 
-		got = IsEven(23);
-		want = false;
-		if got != want {
-			t.Errorf("IsEven function has a fault, expected false, got true");
+		if IsOdd(22) || !IsOdd(25) {
+			t.Errorf("IsOdd function has a fault, expected false, got true");
 		}
+	})
+
+	t.Run("Testing Abs Function", func(t *testing.T) {
+		if Abs(3) != 3 {
+			t.Errorf("Abs int failed, expected 3, got %d", Abs(3))
+		}
+		if Abs(-3) != 3 {
+			t.Errorf("Abs int failed, expected 3, got %d", Abs(3))
+		}
+	})
+
+	t.Run("Testing Clamp Function", func(t *testing.T) {
+		if got := Clamp(3, 5, 9); got != 5 {
+			t.Errorf("Clamp failed, got %d, expected 5", got)
+		}
+		if got := Clamp(10, 5, 9); got != 9 {
+			t.Errorf("Clamp failed, got %d, expected 9", got)
+		}
+		if got := Clamp(7, 5, 9); got != 7 {
+			t.Errorf("Clamp failed, got %d, expected 7", got)
+		}
+	})
+
+	t.Run("Testing Clamp Panic on high < low", func(t *testing.T) {
+		defer func() {
+			if r := recover(); r == nil { // If the code doesnot panics then it will return nil, otherwise !nil. 
+				t.Errorf("Clamp did not panic on low > high")
+			}
+		}()
+		Clamp(10, 11, 9) // It's gonna fail.
 	})
 }

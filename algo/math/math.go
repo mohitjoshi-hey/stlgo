@@ -4,22 +4,14 @@ import (
 	"cmp"
 )
 
-// Integer constraint covering standard signed and unsigned integer types.
+// Ts covering standard signed and unsigned integer types.
 type Integer interface {
 	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr
 }
 
-// Ts covering both positive and negtive numbers.
+// This covering both positive and negtive numbers.
 type SignedNumber interface {
 	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~float32 | ~float64
-}
-
-// Ts covering almost every number on earth.
-type Ordered interface {
-    ~int | ~int8 | ~int16 | ~int32 | ~int64 |
-    ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr |
-    ~float32 | ~float64 |
-    ~string
 }
 
 func gcdTwo[T Integer](a, b T) T {
@@ -136,7 +128,10 @@ func Abs[T SignedNumber](val T) T {
 	return val;
 }
 
-func clamp[T Ordered](val, low, high T) T {
+func Clamp[T cmp.Ordered](val, low, high T) T {
+	if high < low {
+		panic("math: Clamp called with low > high");
+	}
 	if val < low {
 		return low;
 	}
