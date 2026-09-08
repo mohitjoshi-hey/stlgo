@@ -64,4 +64,52 @@ func TestSearch(t *testing.T) {
 			t.Errorf("BinarySearch on empty slice should return false, got true")
 		}
 	})
+
+	t.Run("Test the Find function", func(t *testing.T) {
+		slice := []int{23, 12, 3, 56, 32}
+
+		ind, found := Find(slice, 12)
+		if ind != 1 || !found {
+			t.Errorf("Find failed on valid element, expected (1, true), got (%d, %t)", ind, found)
+		}
+
+		ind, found = Find(slice, 67)
+		if ind != -1 || found {
+			t.Errorf("Find failed on missing element, expected (-1, false), got (%d, %t)", ind, found)
+		}
+	})
+
+	t.Run("Test the FindIf function", func(t *testing.T) {
+		nums := []int{1, 3, 7, 12, 19, 24}
+		idx, found := FindIf(nums, func(v int) bool {
+			return v%2 == 0
+		})
+		if !found || idx != 3 {
+			t.Errorf("FindIf expected (3, true) for first even number, got (%d, %t)", idx, found)
+		}
+
+		idx, found = FindIf(nums, func(v int) bool {
+			return v > 100
+		})
+		if found || idx != -1 {
+			t.Errorf("FindIf expected (-1, false) for unmatched condition, got (%d, %t)", idx, found)
+		}
+
+		type Item struct {
+			Name  string
+			Price int
+		}
+		items := []Item{
+			{Name: "Pen", Price: 10},
+			{Name: "Book", Price: 50},
+			{Name: "Laptop", Price: 800},
+		}
+
+		idx, found = FindIf(items, func(item Item) bool {
+			return item.Price >= 50
+		})
+		if !found || idx != 1 {
+			t.Errorf("FindIf expected (1, true) for struct predicate, got (%d, %t)", idx, found)
+		}
+	})
 }
