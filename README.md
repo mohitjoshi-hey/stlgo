@@ -1,22 +1,21 @@
+````markdown
 # stlgo
 
 High-performance, generic data structures and algorithms for Go 1.23+.
 
-`stlgo` is built for competitive programming and high-throughput systems engineering. It provides modern, type-safe data structures designed around Go generics, CPU cache locality, and Go's garbage collection model.
+`stlgo` is built for competitive programming, low-latency applications, and high-throughput systems engineering. It provides modern, type-safe data structures and algorithms designed around Go generics, contiguous memory layouts, CPU cache locality, and zero-allocation semantics.
+
+---
 
 ## Design Philosophy
 
-* **Cache-Friendly Memory Layouts:** Modern CPUs benefit significantly from predictable memory access patterns. `stlgo` prioritizes contiguous slice-backed memory layouts over pointer-heavy data structures where practical, improving cache locality and reducing unnecessary cache misses.
+* **Contiguous Memory & Cache Locality:** Algorithms operate directly on native Go slices, and containers prioritize slice-backed storage over pointer-heavy node graphs, maximizing CPU L1/L2 cache hits.
+* **Zero-Allocation & Inlinable:** Functions avoid dynamic interface boxing (`interface{}` / `any`) by leveraging `cmp.Ordered`, `comparable`, and numeric type constraints, enabling compiler inlining and vectorization without heap escapes.
+* **GC-Leak Free:** Container pop/dequeue operations explicitly zero retired slots (`var zero T`), ensuring stale references are immediately eligible for garbage collection.
+* **Bring Your Own Concurrency (BYOC):** Containers do not include internal mutexes by default. This eliminates synchronization overhead in single-threaded, competitive programming, and critical-path loops.
+* **Predictable Complexity:** Every algorithm and container operation carries strict time and space complexity guarantees matching C++ STL counterparts.
 
-* **Allocation-Conscious Operations:** Core operations are designed to minimize heap allocations. Where capacity is already available, operations such as `Push`, `Pop`, `Enqueue`, and `Dequeue` can execute without additional allocations.
-
-* **Bring Your Own Concurrency (BYOC):** `stlgo` containers do not include internal locking by default. This avoids synchronization overhead in single-threaded and performance-critical workloads while allowing applications to implement concurrency strategies appropriate for their use case.
-
-* **Memory Safe:** Removed elements are explicitly zeroed when necessary, preventing stale references from unnecessarily keeping objects alive in Go's garbage collector.
-
-* **Consistent Generic API:** Containers use Go's native generics for compile-time type safety. Variadic constructors support convenient type inference when initial values are provided, while APIs follow consistent and predictable naming conventions.
-
-* **Predictable Complexity:** APIs are designed with clear algorithmic guarantees and avoid hiding expensive operations behind seemingly simple method calls.
+---
 
 ## Installation
 
@@ -24,29 +23,63 @@ High-performance, generic data structures and algorithms for Go 1.23+.
 go get github.com/mohitjoshi-hey/stlgo
 ```
 
-## Supported Data Structures
+## Quick Start & Usage
 
-### Stack
+```go
+package main
 
-A fast, generic LIFO stack backed by contiguous slice storage.
+import (
+	"fmt"
 
-### Queue
+	"github.com/mohitjoshi-hey/stlgo/algo"
+)
 
-A generic FIFO queue backed by a slice-based sliding window with automated amortized memory compaction.
+func main() {
+	// Binary Search & Bounds (O(log N))
+	sorted := []int{10, 20, 20, 30, 40}
+	lb := algo.LowerBound(sorted, 20) // 1
+	ub := algo.UpperBound(sorted, 20) // 3
+	idx, ok := algo.BinarySearch(sorted, 30) // (3, true)
+	fmt.Printf("LB: %d, UB: %d, Found at: %d (ok: %t)\n", lb, ub, idx, ok)
 
-## CI/CD & Testing
+	// Unsorted Search & Custom Predicates (O(N))
+	items := []string{"apple", "banana", "cherry"}
+	pos, _ := algo.Find(items, "banana") // (1, true)
+	firstC, _ := algo.FindIf(items, func(s string) bool {
+		return len(s) > 5 // "banana"
+	})
+	fmt.Printf("Find: %d, FindIf: %d\n", pos, firstC)
 
-`stlgo` is tested using Go's native testing tools.
+	// Numeric Utilities
+	nums := []int{1, 2, 3, 4, 5}
+	sum := algo.Sum(nums)              // 15
+	prefix := algo.PrefixSum(nums)     // [1, 3, 6, 10, 15]
+	maxVal, _ := algo.MaxElement(nums) // (5, true)
+	seq := algo.Iota(10, 4)            // [10, 11, 12, 13]
 
-The test suite verifies:
+	fmt.Printf("Sum: %d, Prefix: %v, Max: %d, Iota: %v\n", sum, prefix, maxVal, seq)
+}
+```
 
-* Container construction
-* Core operations
-* FIFO and LIFO behavior
-* Empty container behavior
-* Generic type support
-* Memory compaction behavior
-* Internal state consistency
+## Package Overview
+
+### 1. Algorithms (`algo`)
+
+The `algo` package exposes a facade over specialized subpackages:
+
+| **Subpackage** | **Available Functions** | **Details** |
+|---|---|---|
+| **`algo/search`** | `LowerBound`, `UpperBound`, `BinarySearch`, `Find`, `FindIf` | $O(\log N)$ binary searching for `cmp.Ordered` slices and linear scans for `comparable` / arbitrary types. |
+| **`algo/sort`** | `Sort`, `DescSort`, `SortBy`, `IsSorted`, `NthElement` | Type-safe in-place sorting and $O(N)$ Introselect order statistics. |
+| **`algo/numeric`** | `Sum`, `Product`, `Iota`, `MaxElement`, `MinElement`, `PrefixSum` | Generic arithmetic, array generation, and extrema extraction. |
+| **`algo/math`** | `GCD`, `LCM`, `IsPrime`, `IsEven`, `IsOdd`, `Max`, `Min`, `Clamp`, `Abs` | Common competitive programming mathematical utilities. |
+
+### 2. Containers (`container`)
+
+- **`Stack`**: Contiguous slice-backed LIFO stack with minimal reallocations.
+- **`Queue`**: FIFO queue using a sliding window buffer with amortized memory compaction.
+
+## Testing & Benchmarks
 
 Run the complete test suite:
 
@@ -54,53 +87,45 @@ Run the complete test suite:
 go test -v ./...
 ```
 
-Run tests with the race detector:
+Run tests with data race detection:
 
 ```bash
 go test -v -race ./...
 ```
 
-## Project Goals
+Run benchmarks:
 
-`stlgo` aims to provide:
-
-* Modern generic data structures
-* High-performance implementations
-* Cache-conscious memory layouts
-* Minimal allocation overhead
-* Predictable algorithmic complexity
-* Idiomatic Go APIs
-* Zero external dependencies
-* Comprehensive testing and benchmarks
+```bash
+go test -bench=. -benchmem ./...
+```
 
 ## Roadmap
 
 ### Current
 
-* [x] Generic Stack
-* [x] Generic Queue
-* [x] Unit tests
+- [x] Generic `Stack`
+- [x] Generic `Queue` (sliding window with amortized compaction)
+- [x] Complete `algo/search` (`LowerBound`, `UpperBound`, `BinarySearch`, `Find`, `FindIf`)
+- [x] Complete `algo/numeric` (`Sum`, `Product`, `Iota`, `MaxElement`, `MinElement`, `PrefixSum`)
+- [x] Complete `algo/sort` (`Sort`, `DescSort`, `SortBy`, `IsSorted`, `NthElement`)
+- [x] Complete `algo/math` (`GCD`, `LCM`, `IsPrime`, `Clamp`, etc.)
+- [x] Unit test suites with edge case coverage
 
-### Planned
+### In Progress / Planned
 
-* [ ] Deque
-* [ ] Set
-* [ ] Priority Queue
-* [ ] BitSet
-* [ ] TreeSet
-* [ ] TreeMap
-* [ ] Segment Tree
-* [ ] Fenwick Tree
-* [ ] Disjoint Set Union
-* [ ] Search algorithms
-* [ ] STL-inspired algorithms
-* [ ] Benchmarks
-* [ ] GitHub Actions CI
+- [ ] Generic `PriorityQueue` (Binary Heap with $O(1)$ peek, $O(\log N)$ push/pop)
+- [ ] Generic `Deque` (circular ring buffer)
+- [ ] Generic `Set` (Hash Set backed by `map[T]struct{}`)
+- [ ] `NextPermutation` / `PrevPermutation`
+- [ ] Disjoint Set Union (DSU with path compression and union by rank)
+- [ ] Fenwick Tree (Binary Indexed Tree) and Segment Tree
+- [ ] Formal benchmark suite against standard library `container/heap`
 
 ## Requirements
 
-* Go **1.23+**
+- **Go 1.23+**
 
 ## License
 
-This project is licensed under the **MIT License**.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+````
