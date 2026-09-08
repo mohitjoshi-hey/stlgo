@@ -1,4 +1,4 @@
-package algo
+package numeric
 
 import "cmp"
 

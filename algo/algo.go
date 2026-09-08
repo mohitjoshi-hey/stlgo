@@ -5,6 +5,7 @@ import (
 
 	math "github.com/mohitjoshi-hey/stlgo/algo/math"
 	numeric "github.com/mohitjoshi-hey/stlgo/algo/numeric"
+	permutation "github.com/mohitjoshi-hey/stlgo/algo/permutations"
 	search "github.com/mohitjoshi-hey/stlgo/algo/search"
 	sort "github.com/mohitjoshi-hey/stlgo/algo/sort"
 )
@@ -111,4 +112,13 @@ func MinElement[T cmp.Ordered](slice []T) (T, bool) {
 
 func PrefixSum[T numeric.Number](slice []T) []T {
 	return numeric.PrefixSum(slice)
+}
+
+// Permutation functions
+func NextPermutation[T cmp.Ordered](slice []T) ([]T, bool) {
+	return permutation.NextPermutation(slice)
+}
+
+func PrevPermutation[T cmp.Ordered](slice []T) ([]T, bool) {
+	return permutation.PrevPermutation(slice)
 }
