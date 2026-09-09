@@ -1,4 +1,3 @@
-
 # stlgo
 
 High-performance, generic data structures and algorithms for Go 1.23+.
@@ -13,7 +12,7 @@ High-performance, generic data structures and algorithms for Go 1.23+.
 * **Zero-Allocation & Inlinable:** Functions avoid dynamic interface boxing (`interface{}` / `any`) by leveraging `cmp.Ordered`, `comparable`, and numeric type constraints, enabling compiler inlining and vectorization without heap escapes.
 * **GC-Leak Free:** Container pop/dequeue operations explicitly zero retired slots (`var zero T`), ensuring stale references are immediately eligible for garbage collection.
 * **Bring Your Own Concurrency (BYOC):** Containers do not include internal mutexes by default. This eliminates synchronization overhead in single-threaded, competitive programming, and critical-path loops.
-* **Predictable Complexity:** Every algorithm and container operation carries strict time and space complexity guarantees matching C++ STL counterparts.
+* **Predictable Complexity:** Every algorithm and container operation carries strict time and space complexity guarantees matching C++ STL counterparts, verified against the [benchmark results](#benchmarks) below.
 
 ---
 
@@ -73,11 +72,21 @@ The `algo` package exposes a facade over specialized subpackages:
 | **`algo/sort`** | `Sort`, `DescSort`, `SortBy`, `IsSorted`, `NthElement` | Type-safe in-place sorting and $O(N)$ Introselect order statistics. |
 | **`algo/numeric`** | `Sum`, `Product`, `Iota`, `MaxElement`, `MinElement`, `PrefixSum` | Generic arithmetic, array generation, and extrema extraction. |
 | **`algo/math`** | `GCD`, `LCM`, `IsPrime`, `IsEven`, `IsOdd`, `Max`, `Min`, `Clamp`, `Abs` | Common competitive programming mathematical utilities. |
+| **`algo/permutations`** | `NextPermutation`, `PrevPermutation` | $O(N)$ lexicographic permutation stepping via in-place reversal. |
 
 ### 2. Containers (`container`)
 
 - **`Stack`**: Contiguous slice-backed LIFO stack with minimal reallocations.
 - **`Queue`**: FIFO queue using a sliding window buffer with amortized memory compaction.
+- **`Deque`**: Double-ended queue backed by a circular ring buffer, supporting $O(1)$ amortized push/pop from both ends with automatic unwrap-on-grow.
+
+## Benchmarks
+
+Median of 10 runs (`go test -run="^$" -bench="." -benchmem -count=10 ./benchmarks`), measured on Windows.
+
+<img width="1103" height="857" alt="image" src="https://github.com/user-attachments/assets/320fabe4-7e32-4d58-b5f7-7714d719c750" />
+
+Full raw data (all 10 runs per benchmark) and the theoretical-complexity breakdown are tracked in `stlgo_benchmarks.xlsx`.
 
 ## Testing & Benchmarks
 
@@ -105,18 +114,19 @@ go test -bench=. -benchmem ./...
 
 - [x] Generic `Stack`
 - [x] Generic `Queue` (sliding window with amortized compaction)
+- [x] Generic `Deque` (circular ring buffer)
 - [x] Complete `algo/search` (`LowerBound`, `UpperBound`, `BinarySearch`, `Find`, `FindIf`)
 - [x] Complete `algo/numeric` (`Sum`, `Product`, `Iota`, `MaxElement`, `MinElement`, `PrefixSum`)
 - [x] Complete `algo/sort` (`Sort`, `DescSort`, `SortBy`, `IsSorted`, `NthElement`)
 - [x] Complete `algo/math` (`GCD`, `LCM`, `IsPrime`, `Clamp`, etc.)
+- [x] `NextPermutation` / `PrevPermutation`
 - [x] Unit test suites with edge case coverage
+- [x] Benchmark suite with tracked complexity guarantees
 
 ### In Progress / Planned
 
 - [ ] Generic `PriorityQueue` (Binary Heap with $O(1)$ peek, $O(\log N)$ push/pop)
-- [ ] Generic `Deque` (circular ring buffer)
 - [ ] Generic `Set` (Hash Set backed by `map[T]struct{}`)
-- [ ] `NextPermutation` / `PrevPermutation`
 - [ ] Disjoint Set Union (DSU with path compression and union by rank)
 - [ ] Fenwick Tree (Binary Indexed Tree) and Segment Tree
 - [ ] Formal benchmark suite against standard library `container/heap`
