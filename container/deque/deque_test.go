@@ -89,11 +89,11 @@ func TestDequeOperations(t *testing.T) {
 		// We will puush one more. Capacity is 4, Len is 4. This must trigger grow()
 		d.PushBack(6)
 
-		// The circular array should have been "unwrapped" into a new capacity-8 array
+		// The circular array should be unwrapped into a new capacity 8 array
 		if len(d.val) != 8 {
 			t.Errorf("Expected capacity 8, got %d", len(d.val))
 		}
-		if d.Head != 0 {
+		if d.head != 0 {
 			t.Errorf("Expected Head to reset to 0 after grow, got %d", d.Head)
 		}
 		
