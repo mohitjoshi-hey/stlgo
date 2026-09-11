@@ -14,10 +14,10 @@ func New[T any](items ...T) *Deque[T] {
 	}
 
 	d := &Deque[T]{
-		val:  make([]T, capacity),
+		val: make([]T, capacity),
 		head: 0,
 		tail: len(items),
-		len:  len(items),
+		len: len(items),
 	}
 
 	copy(d.val, items)
@@ -27,6 +27,7 @@ func New[T any](items ...T) *Deque[T] {
 func (d *Deque[T]) IsEmpty() bool { 
 return d.len == 0 
 }
+
 func (d *Deque[T]) Len() int { 
 return d.len
 }
