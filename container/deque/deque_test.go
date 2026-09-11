@@ -94,7 +94,7 @@ func TestDequeOperations(t *testing.T) {
 			t.Errorf("Expected capacity 8, got %d", len(d.val))
 		}
 		if d.head != 0 {
-			t.Errorf("Expected Head to reset to 0 after grow, got %d", d.Head)
+			t.Errorf("Expected Head to reset to 0 after grow, got %d", d.head)
 		}
 		
 		expectedFront := []int{2, 3, 4, 5, 6}
