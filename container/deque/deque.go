@@ -8,16 +8,17 @@ type Deque[T any] struct {
 }
 
 func New[T any](items ...T) *Deque[T] {
+        // While starting empty, allocate a constant size(like 4) to avoid immediate resizing
 	capacity := len(items);
 	if capacity < 4 {
 		capacity = 4;
 	}
 
 	d := &Deque[T]{
-		val:  make([]T, capacity),
+		val: make([]T, capacity),
 		head: 0,
 		tail: len(items),
-		len:  len(items),
+		len: len(items),
 	}
 
 	copy(d.val, items)
