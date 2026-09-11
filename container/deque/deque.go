@@ -1,10 +1,10 @@
 package deque
 
 type Deque[T any] struct {
-	val  []T
+	val []T
 	head int
 	tail int
-	len  int
+	len int
 }
 
 func New[T any](items ...T) *Deque[T] {
