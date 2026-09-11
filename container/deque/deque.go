@@ -2,70 +2,83 @@ package deque
 
 type Deque[T any] struct {
 	val []T
-	Head int
-	Tail int
+	head int
+	tail int
 	len int
 }
 
 func New[T any](items ...T) *Deque[T] {
-	// If starting empty, allocate a small base capacity (e.g., 4) to avoid immediate resizing
-	cap := len(items)
-	if cap < 4 {
-		cap = 4
+	capacity := len(items);
+	if capacity < 4 {
+		capacity = 4;
 	}
 
 	d := &Deque[T]{
-		val: make([]T, cap),
-		Head: 0,
-		Tail: len(items),
-		len: len(items),
+		val:  make([]T, capacity),
+		head: 0,
+		tail: len(items),
+		len:  len(items),
 	}
 
 	copy(d.val, items)
-	return d
+	return d;
+}
+
+func (d *Deque[T]) GetFront() (T, bool) {
+	if d.IsEmpty() {
+		var zero T
+		return zero, false
+	}
+	return d.val[d.head], true
+}
+
+func (d *Deque[T]) GetRear() (T, bool) {
+	if d.IsEmpty() {
+		var zero T
+		return zero, false
+	}
+	capacity := len(d.val)
+	return d.val[(d.tail-1+capacity)%capacity], true
 }
 
 func (d *Deque[T]) IsEmpty() bool {
-	return d.len == 0
+	return d.len == 0;
 }
 
 func (d *Deque[T]) Len() int {
-	return d.len
+	return d.len;
 }
 
-// grow doubles the capacity and "unwraps" the circular buffer
 func (d *Deque[T]) grow() {
-	newCap := len(d.val) * 2
+	newCap := len(d.val)*2;
 	newVal := make([]T, newCap)
 
-	// Because the buffer is 100% full, Head and Tail are at the exact same index.
-	// We unwrap by copying from Head to the end, then from the start up to Head.
-	n := copy(newVal, d.val[d.Head:])
-	copy(newVal[n:], d.val[:d.Head]) // We can just use Head here since Head == Tail
+	n := copy(newVal, d.val[d.head:])
+	copy(newVal[n:], d.val[:d.head])
 
-	d.val = newVal
-	d.Head = 0
-	d.Tail = d.len // Tail points to the next empty slot
+	d.val = newVal;
+	d.head = 0;
+	d.tail = d.len;
 }
 
 func (d *Deque[T]) PushBack(value T) {
 	if d.len == len(d.val) {
-		d.grow()
+		d.grow();
 	}
 
-	d.val[d.Tail] = value
-	d.Tail = (d.Tail + 1) % len(d.val)
-	d.len++
+	d.val[d.tail] = value
+	d.tail = (d.tail + 1) % len(d.val)
+	d.len++;
 }
 
 func (d *Deque[T]) PushFront(value T) {
 	if d.len == len(d.val) {
-		d.grow()
+		d.grow();
 	}
 
-	d.Head = (d.Head - 1 + len(d.val)) % len(d.val)
-	d.val[d.Head] = value
-	d.len++
+	d.head = (d.head - 1 + len(d.val)) % len(d.val)
+	d.val[d.head] = value
+	d.len++;
 }
 
 func (d *Deque[T]) PopBack() (T, bool) {
@@ -74,15 +87,13 @@ func (d *Deque[T]) PopBack() (T, bool) {
 		return zero, false
 	}
 
-	// Move tail backward to find the last inserted element
-	cap := len(d.val)
-	d.Tail = (d.Tail - 1 + cap) % cap
+	capacity := len(d.val)
+	d.tail = (d.tail - 1 + capacity) % capacity
 
-	ele := d.val[d.Tail]
+	ele := d.val[d.tail]
 
-	// Erase reference to prevent memory leaks
 	var zero T
-	d.val[d.Tail] = zero
+	d.val[d.tail] = zero
 	d.len--
 
 	return ele, true
@@ -94,14 +105,12 @@ func (d *Deque[T]) PopFront() (T, bool) {
 		return zero, false
 	}
 
-	ele := d.val[d.Head]
+	ele := d.val[d.head]
 
-	// Erase reference to prevent memory leaks
 	var zero T
-	d.val[d.Head] = zero
+	d.val[d.head] = zero
 
-	// Move Head forward
-	d.Head = (d.Head + 1) % len(d.val)
+	d.head = (d.head + 1) % len(d.val)
 	d.len--
 
 	return ele, true
