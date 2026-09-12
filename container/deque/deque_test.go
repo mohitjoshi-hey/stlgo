@@ -55,53 +55,48 @@ func TestDequeOperations(t *testing.T) {
 	})
 
 	t.Run("Circular Wrapping Logic", func(t *testing.T) {
-		d := New[int]() // Base capacity is 4
+		d := New[int]() // base capacity is 4
 
 		// Fill capacity: [1, 2, 3, _]
 		d.PushBack(1)
 		d.PushBack(2)
 		d.PushBack(3)
 
-		// Pop one from front: [_, 2, 3, _], Head moves to index 1
+		
 		d.PopFront()
 
-		// Push two more: [5, 2, 3, 4]
-		// Tail wraps around to index 0 using modulo!
 		d.PushBack(4)
 		d.PushBack(5)
 
-		// Verify the internal array state explicitly
-		if d.Head != 1 || d.Tail != 1 {
-			t.Errorf("Head and Tail should both be 1 due to wrapping, got Head: %d, Tail: %d", d.Head, d.Tail)
+		if d.head != 1 || d.tail != 1 {
+			t.Errorf("Head and Tail should both be 1 due to wrapping, got Head: %d, Tail: %d", d.head, d.tail)
 		}
 		if !slices.Equal(d.val, []int{5, 2, 3, 4}) {
 			t.Errorf("Circular wrap failed, got internal array: %v", d.val)
 		}
 	})
 
-	t.Run("Dynamic Resizing (Grow)", func(t *testing.T) {
-		d := New[int]() // Base capacity is 4
+	t.Run("Testing the grow funjtion", func(t *testing.T) {
+		d := New[int]()
 
-		// Create a wrapped state: [5, 2, 3, 4]
 		d.PushBack(1)
 		d.PushBack(2)
 		d.PushBack(3)
-		d.PopFront() // Removes 1
+		d.PopFront()
 		d.PushBack(4)
 		d.PushBack(5) 
 
-		// Push one more. Capacity is 4, Len is 4. This must trigger grow()
+		// We will puush one more. Capacity is 4, Len is 4. This must trigger grow()
 		d.PushBack(6)
 
-		// The circular array should have been "unwrapped" into a new capacity-8 array
+		// The circular array should be unwrapped into a new capacity 8 array
 		if len(d.val) != 8 {
 			t.Errorf("Expected capacity 8, got %d", len(d.val))
 		}
-		if d.Head != 0 {
-			t.Errorf("Expected Head to reset to 0 after grow, got %d", d.Head)
+		if d.head != 0 {
+			t.Errorf("Expected Head to reset to 0 after grow, got %d", d.head)
 		}
 		
-		// Expected sequence from front to back is 2, 3, 4, 5, 6
 		expectedFront := []int{2, 3, 4, 5, 6}
 		for i, exp := range expectedFront {
 			v, _ := d.PopFront()
