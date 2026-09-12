@@ -1,67 +1,32 @@
+// this package queue provides a generic FIFO queue.
+// I made it as a thin wrapper over the deque, just to reduce some hardwork.
 package queue
 
+import "github.com/mohitjoshi-hey/stlgo/container/deque"
+
 type Queue[T any] struct {
-	val  []T
-	head int
+	d *deque.Deque[T]
 }
 
 func New[T any](items ...T) *Queue[T] {
-	q := &Queue[T]{
-		val:  make([]T, 0, len(items)), 
-		head: 0,
-	}
-	q.val = append(q.val, items...)
-	return q
+	return &Queue[T]{d: deque.New(items...)}
 }
 
-func (q *Queue[T]) Enqueue(value T) {
-	q.val = append(q.val, value)
+func (q *Queue[T]) Enqueue(value T) { 
+	q.d.PushBack(value)
 }
-
-func (q *Queue[T]) Dequeue() (T, bool) {
-	if q.IsEmpty() {
-		var zero T
-		return zero, false
-	}
-
-	value := q.val[q.head]
-
-	var zero T
-	q.val[q.head] = zero
-	q.head++
-
-	if q.head == len(q.val) {
-		q.val = q.val[:0]
-		q.head = 0
-	} else if q.head > 100 && q.head >= len(q.val)/2 {
-		copy(q.val, q.val[q.head:])
-		q.val = q.val[:len(q.val)-q.head]
-		q.head = 0
-	}
-
-	return value, true
+func (q *Queue[T]) Dequeue() (T, bool) { 
+	return q.d.PopFront()
 }
-
-func (q *Queue[T]) IsEmpty() bool {
-	return len(q.val)-q.head == 0
+func (q *Queue[T]) GetFront() (T, bool) { 
+	return q.d.GetFront()
 }
-
-func (q *Queue[T]) Len() int {
-	return len(q.val) - q.head
+func (q *Queue[T]) GetRear() (T, bool) { 
+	return q.d.GetRear()
 }
-
-func (q *Queue[T]) GetFront() (T, bool) {
-	if q.IsEmpty() {
-		var zero T
-		return zero, false
-	}
-	return q.val[q.head], true
+func (q *Queue[T]) IsEmpty() bool{ 
+	return q.d.IsEmpty()
 }
-
-func (q *Queue[T]) GetRear() (T, bool) {
-	if q.IsEmpty() {
-		var zero T
-		return zero, false
-	}
-	return q.val[len(q.val)-1], true
+func (q *Queue[T]) Len() int { 
+	return q.d.Len()
 }
