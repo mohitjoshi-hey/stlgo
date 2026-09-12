@@ -84,7 +84,7 @@ The `algo` package exposes a facade over specialized subpackages:
 
 Median of 10 runs (`go test -run="^$" -bench="." -benchmem -count=10 ./benchmarks`), measured on Windows.
 
-<img width="1103" height="857" alt="image" src="![alt text](image.png)" />
+<img width="1088" height="857" alt="image" src="https://github.com/user-attachments/assets/09f58f2b-f0ac-4372-827f-46b7158eb740" />
 
 Full raw data (all 10 runs per benchmark) and the theoretical-complexity breakdown are tracked in `stlgo_benchmarks.xlsx`.
 
