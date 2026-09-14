@@ -17,10 +17,7 @@ func TestSortAndSelect(t *testing.T) {
 			trial := make([]int, len(original))
 			copy(trial, original)
 
-			val, ok := NthElement(trial, k)
-			if !ok {
-				t.Fatalf("Index %d: expected ok=true, got false", k)
-			}
+			val := NthElement(trial, k)
 
 			//Checking exact value
 			if val != sorted[k] || trial[k] != sorted[k] {
@@ -43,17 +40,17 @@ func TestSortAndSelect(t *testing.T) {
 		}
 	})
 
-	t.Run("Subarray Insertion Sort Cutoff", func(t *testing.T) {
+	t.Run("Checking if, will the elements of slice gets aligned if an element is inserted at a particular index of the slice", func(t *testing.T) {
 		s := []int{9, 4, 1, 7, 2}
 		k := 2
-		val, ok := NthElement(s, k)
+		val := NthElement(s, k)
 
-		if !ok || val != 4 || s[k] != 4 {
-			t.Errorf("Expected (4, true) at index %d, got (%d, %t)", k, val, ok)
+		if val != 4 || s[k] != 4 {
+			t.Errorf("Expected 4 at index %d, got %d", k, val)
 		}
 	})
 
-	t.Run("Testing a SortBy with Custom Structs", func(t *testing.T) {
+	t.Run("Testing a SortBy with a Custom Structs", func(t *testing.T) {
 		type Player struct {
 			Name  string
 			Score int
@@ -81,20 +78,29 @@ func TestSortAndSelect(t *testing.T) {
 	t.Run("Testing ouut of  bounds edge cases", func(t *testing.T) {
 		s := []int{1, 2, 3}
 
-		if _, ok := NthElement(s, -1); ok {
-			t.Errorf("Expected false for negative index, got true")
+		expectPanic := func(fn func()) {
+			defer func() {
+				if r := recover(); r == nil {
+					t.Errorf("Expected panic, got none")
+				}
+			}()
+			fn()
 		}
-		if _, ok := NthElement(s, 5); ok {
-			t.Errorf("Expected false for index >= len, got true")
-		}
+
+		expectPanic(func() {
+			 NthElement(s, -1)
+		})
+		expectPanic(func() {
+			 NthElement(s, 5)
+		})
 
 		var empty []int
-		if _, ok := NthElement(empty, 0); ok {
-			t.Errorf("Expected false for empty slice, got true")
-		}
+		expectPanic(func() {
+			 NthElement(empty, 0)
+		})
 	})
 
-	t.Run("Testing IsSorted function", func(t *testing.T) {
+	t.Run("Testing the IsSorted function", func(t *testing.T) {
 		s1 := []int{9, 4, 1, 7, 2}
 		s2 := []int{1, 2, 3, 4, 5}
 
@@ -106,11 +112,11 @@ func TestSortAndSelect(t *testing.T) {
 		}
 	})
 
-	t.Run("All Identical Elements (Killer Test for Lomuto)", func(t *testing.T) {
+	t.Run("All Identical Elements (A Killer Test for Lomuto)", func(t *testing.T) {
 		s := []int{7, 7, 7, 7, 7, 7, 7, 7, 7, 7}
-		val, ok := NthElement(s, 4)
-		if !ok || val != 7 || s[4] != 7 {
-			t.Errorf("Expected (7, true) at index 4, got (%d, %t)", val, ok)
+		val := NthElement(s, 4)
+		if val != 7 || s[4] != 7 {
+			t.Errorf("Expected 7 at index 4, got %d", val)
 		}
 	})
 }

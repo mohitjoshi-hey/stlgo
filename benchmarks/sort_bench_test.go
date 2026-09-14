@@ -22,7 +22,7 @@ func BenchmarkSort_NthElement_Vs_SlicesSort(b *testing.B) {
 			b.ReportAllocs()
 			for b.Loop() {
 				copy(buf, source)
-				_, _ = algo.NthElement(buf, k)
+				_ = algo.NthElement(buf, k)
 			}
 		})
 
