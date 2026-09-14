@@ -48,7 +48,7 @@ func IsSorted[T cmp.Ordered](slice []T) bool {
 	return sort.IsSorted(slice)
 }
 
-func NthElement[T cmp.Ordered](slice []T, n int) (T, bool) {
+func NthElement[T cmp.Ordered](slice []T, n int) T {
 	return sort.NthElement(slice, n)
 }
 

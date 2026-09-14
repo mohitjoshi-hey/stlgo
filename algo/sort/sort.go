@@ -33,23 +33,14 @@ func IsSorted[T cmp.Ordered](slice []T) bool {
 	return slices.IsSorted(slice)
 }
 
-// NthElement reorders the slice in-place such that:
-// 1. slice[n] contains the value that would be there at index 'n' if the slice were fully sorted. And it also doesn't neccessarily sort the slice, it just update the slice such that :
-// a. All elements before n are <= slice[n].
-// b. All elements after n are >= slice[n].
-// Implemented via Introselect (3-Way Partitioning + Depth-Limited Heap Fallback).
-// Average Time: O(N)
-// Worst-Case Time: O(N log N)
-func NthElement[T cmp.Ordered](slice []T, n int) (T, bool) {
+// NthElement reorders the slice in-place such that: slice[n] contains the value that would be there at index 'n' if the slice were fully sorted. And it also doesn't neccessarily sort the slice, it just update the slice such that : All elements before n are <= slice[n] & n are >= slice[n].
+func NthElement[T cmp.Ordered](slice []T, n int) T {
 	if n < 0 || n >= len(slice) {
-		var zero T
-		return zero, false
+		panic("sort: NthElement index out of range")
 	}
-
 	maxDepth := 2 * (bits.Len(uint(len(slice))) - 1)
 	introselect(slice, 0, len(slice)-1, n, maxDepth)
-
-	return slice[n], true
+	return slice[n]
 }
 
 func introselect[T cmp.Ordered](slice []T, left, right, n, maxDepth int) {
