@@ -1,6 +1,6 @@
 # stlgo
 
-High-performance, generic data structures and algorithms for Go 1.23+.
+High-performance, generic data structures and algorithms for Go 1.26+.
 
 `stlgo` is built for competitive programming, low-latency applications, and high-throughput systems engineering. It provides modern, type-safe data structures and algorithms designed around Go generics, contiguous memory layouts, CPU cache locality, and zero-allocation semantics.
 
@@ -133,7 +133,7 @@ go test -bench=. -benchmem ./...
 
 ## Requirements
 
-- **Go 1.23+**
+- **Go 1.26+**
 
 ## License
 
