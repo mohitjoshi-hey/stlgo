@@ -1,5 +1,6 @@
-<img width="5000" height="5000" alt="10" src="https://github.com/user-attachments/assets/2d77af55-fa00-4e49-be0f-8ca5a1a74753" />
-
+<div align="center">
+  <img src="/assets/logo.png" width="75%"/>
+</div>
 
 # stlgo
 
@@ -141,3 +142,10 @@ go test -bench=. -benchmem ./...
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Credits
+
+The image used in this project was sourced from **https://github.com/MariaLetta/free-gophers-pack**.
+
+📷 Image by **[MariaLetta](https://github.com/MariaLetta)**, used under the **[Creative Commons (CC0-1.0)](https://github.com/MariaLetta/free-gophers-pack?tab=CC0-1.0-1-ov-file) license.**
+
