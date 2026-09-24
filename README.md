@@ -4,7 +4,7 @@
 
 # stlgo
 
-[![FFmpeg Health](https://oss-health-monitor.vercel.app/api/badge/mohitjoshi-hey/stlgo)](https://github.com/mohitjoshi-hey/stlgo)
+[![FFmpeg Health](https://oss-health-monitor.vercel.app/api/badge/mohitjoshi-hey/stlgo?v=2)](https://github.com/mohitjoshi-hey/stlgo)
 
 High-performance, generic data structures and algorithms for Go 1.26+.
 
