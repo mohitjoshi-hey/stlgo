@@ -1,5 +1,7 @@
+// Package deque provides a generic double-ended queue backed by a circular ring buffer. Both ends support O(1) amortized push/pop, with automatic doubling and unwrap-on-grow once the buffer fills.
 package deque
 
+// Deque is a generic double-ended queue. head and tail are internal ring indices and must not be set directly from outside the package.
 type Deque[T any] struct {
 	val []T
 	head int
@@ -7,6 +9,7 @@ type Deque[T any] struct {
 	len int
 }
 
+// New creates a Deque pre-populated with items (front to back). If fewer than 4 items are given, the backing array is still allocated with a minimum capacity of 4 to avoid an immediate reallocation on first push.
 func New[T any](items ...T) *Deque[T] {
         // While starting empty, allocate a constant size(like 4) to avoid immediate resizing
 	capacity := len(items);
@@ -25,6 +28,7 @@ func New[T any](items ...T) *Deque[T] {
 	return d;
 }
 
+// GetFront returns the element at the front of the deque without removing it. ok is false if the deque is empty.
 func (d *Deque[T]) GetFront() (T, bool) {
 	if d.IsEmpty() {
 		var zero T
@@ -33,6 +37,7 @@ func (d *Deque[T]) GetFront() (T, bool) {
 	return d.val[d.head], true
 }
 
+// GetRear returns the element at the back of the deque without removing it. ok is false if the deque is empty.
 func (d *Deque[T]) GetRear() (T, bool) {
 	if d.IsEmpty() {
 		var zero T
@@ -42,10 +47,12 @@ func (d *Deque[T]) GetRear() (T, bool) {
 	return d.val[(d.tail-1+capacity)%capacity], true
 }
 
+// IsEmpty reports whether the deque holds no elements.
 func (d *Deque[T]) IsEmpty() bool {
 	return d.len == 0;
 }
 
+// Len returns the number of elements currently stored.
 func (d *Deque[T]) Len() int {
 	return d.len;
 }
@@ -62,6 +69,7 @@ func (d *Deque[T]) grow() {
 	d.tail = d.len;
 }
 
+// PushBack appends value to the back of the deque in O(1) amortized time.
 func (d *Deque[T]) PushBack(value T) {
 	if d.len == len(d.val) {
 		d.grow();
@@ -72,6 +80,7 @@ func (d *Deque[T]) PushBack(value T) {
 	d.len++;
 }
 
+// PushFront prepends value to the front of the deque in O(1) amortized time.
 func (d *Deque[T]) PushFront(value T) {
 	if d.len == len(d.val) {
 		d.grow();
@@ -82,6 +91,7 @@ func (d *Deque[T]) PushFront(value T) {
 	d.len++;
 }
 
+// PopBack removes and returns the element at the back of the deque. ok is false if the deque is empty.
 func (d *Deque[T]) PopBack() (T, bool) {
 	if d.IsEmpty() {
 		var zero T
@@ -100,6 +110,7 @@ func (d *Deque[T]) PopBack() (T, bool) {
 	return ele, true
 }
 
+// PopFront removes and returns the element at the front of the deque. ok is false if the deque is empty.
 func (d *Deque[T]) PopFront() (T, bool) {
 	if d.IsEmpty() {
 		var zero T
