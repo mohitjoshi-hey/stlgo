@@ -4,6 +4,8 @@
 
 # stlgo
 
+[![FFmpeg Health](https://oss-health-monitor.vercel.app/api/badge/mohitjoshi-hey/stlgo)](https://github.com/mohitjoshi-hey/stlgo)
+
 High-performance, generic data structures and algorithms for Go 1.26+.
 
 `stlgo` is built for competitive programming, low-latency applications, and high-throughput systems engineering. It provides modern, type-safe data structures and algorithms designed around Go generics, contiguous memory layouts, CPU cache locality, and zero-allocation semantics.
