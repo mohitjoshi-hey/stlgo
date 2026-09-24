@@ -17,7 +17,7 @@ func New[T any](items ...T) *Deque[T] {
 	d := &Deque[T]{
 		val: make([]T, capacity),
 		head: 0,
-		tail: len(items),
+		tail: len(items) % capacity,
 		len: len(items),
 	}
 
