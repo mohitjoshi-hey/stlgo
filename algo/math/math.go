@@ -1,15 +1,16 @@
+// Package math provides common competitive-programming numeric utilities- GCD, LCM, testing prime, Max/Min/Clamp, and simple integer predicates.
 package math
 
 import (
 	"cmp"
 )
 
-// Ts covering standard signed and unsigned integer types.
+// Integer covers Go's standard signed and unsigned integer types.
 type Integer interface {
 	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr
 }
 
-// This covering both positive and negtive numbers.
+// SignedNumber covers signed integer and floating-point types.
 type SignedNumber interface {
 	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~float32 | ~float64
 }
@@ -24,6 +25,7 @@ func gcdTwo[T Integer](a, b T) T {
 	return a
 }
 
+// GCD returns the greatest common divisor of a, b, and any additional values in rest. The result is always non-negative.
 func GCD[T Integer](a, b T, rest ...T) T {
 	res := gcdTwo(a, b)
 	if res == 1 {
@@ -50,6 +52,7 @@ func lcmTwo[T Integer](a, b T) T {
 	return res
 }
 
+// LCM returns the least common multiple of a, b, and any additional values in rest. Returns 0 if any argument is 0.
 func LCM[T Integer](a, b T, rest ...T) T {
 	res := lcmTwo(a, b)
 	if res == 0 {
@@ -90,6 +93,7 @@ func max2[T cmp.Ordered](a, b T) T {
 	return b
 }
 
+// Max returns the largest of a, b, and any additional values in rest.
 func Max[T cmp.Ordered](a, b T, rest ...T) T {
 	m := max2(a, b)
 	for _, ele := range rest {
@@ -105,6 +109,7 @@ func min2[T cmp.Ordered](a, b T) T {
 	return b
 }
 
+// Min returns the smallest of a, b, and any additional values in rest.
 func Min[T cmp.Ordered](a, b T, rest ...T) T {
 	m := min2(a, b)
 	for _, ele := range rest {
@@ -113,14 +118,17 @@ func Min[T cmp.Ordered](a, b T, rest ...T) T {
 	return m
 }
 
+// IsEven tells whether val is evenly divisible by 2.
 func IsEven[T Integer](val T) bool {
 	return val%2 == 0
 }
 
+// IsOdd tells whether val is not evenly divisible by 2.
 func IsOdd[T Integer](val T) bool {
 	return !IsEven(val)
 }
 
+// Abs returns the absolute value of val.
 func Abs[T SignedNumber](val T) T {
 	if val < 0 {
 		return -val;

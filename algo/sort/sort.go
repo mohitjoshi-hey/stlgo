@@ -1,3 +1,4 @@
+// Package sort provides generic in-place sorting and O(N) Introselect order-statistics selection.
 package sort
 
 import (

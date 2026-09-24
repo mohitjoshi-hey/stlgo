@@ -1,7 +1,9 @@
+// Package search provides binary search over sorted slices and linear search over unsorted slices.
 package search
 
 import "cmp"
 
+// LowerBound returns the index of the first element in slice that is >=val, assuming slice is sorted in ascending order. Returns len(slice) if no such element exists.
 func LowerBound[T cmp.Ordered](slice []T, val T) int {
 	low := 0
 	high := len(slice)
@@ -18,6 +20,7 @@ func LowerBound[T cmp.Ordered](slice []T, val T) int {
 	return low
 }
 
+// UpperBound returns the index of the first element in slice that is >val, assuming slice is sorted in ascending order. Returns len(slice) if no such element exists.
 func UpperBound[T cmp.Ordered](slice []T, val T) int {
 	low := 0
 	high := len(slice)
@@ -34,7 +37,7 @@ func UpperBound[T cmp.Ordered](slice []T, val T) int {
 	return low
 }
 
-// Helpful for finding an element in a sorted array.
+// For finding an element in a sorted array.
 func BinarySearch[T cmp.Ordered](slice []T, val T) (int, bool) {
 	ind := LowerBound(slice, val)
 
@@ -56,6 +59,7 @@ func Find[T comparable](slice []T, val T) (int, bool) {
 	return -1, false;
 }
 
+// FindIf returns the index of the first element in slice for which pred returns true. ok is false if no element satisfies pred.
 func FindIf[T any](slice[]T, pred func(val T) bool) (int, bool) {
 	for i, val := range slice {
 		if pred(val) {

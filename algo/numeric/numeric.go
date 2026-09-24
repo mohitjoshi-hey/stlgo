@@ -1,3 +1,4 @@
+// Package numeric provides generic arithmetic and array-generation helpers: sums, products, ranges, extrema, and prefix sums.
 package numeric
 
 import "cmp"
@@ -6,10 +7,12 @@ type Number interface {
 	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr | ~float32 | ~float64
 }
 
+// Integer covers Go's standard signed and unsigned integer types.
 type Integer interface {
 	~int | ~int8 | ~int16 | ~int32 | ~int64 | ~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr
 }
 
+// Sum returns the sum of all elements in slice. Returns 0 for an empty slice.
 func Sum[T Number](slice []T) T {
 	sum := T(0)
 	for _, val := range slice {
@@ -19,6 +22,7 @@ func Sum[T Number](slice []T) T {
 	return sum
 }
 
+// Product returns the product of all elements in slice. Returns 0 for an empty slice (there is nothing to multiply).
 func Product[T Number](slice []T) T {
 	product := T(1)
 	if len(slice) == 0 {
@@ -31,6 +35,7 @@ func Product[T Number](slice []T) T {
 	return product
 }
 
+// Iota returns a slice of size consecutive values starting at start. Returns nil if size <= 0.
 func Iota[T Integer](start T, size int) []T {
 	if size <= 0 {
 		return nil
@@ -45,6 +50,7 @@ func Iota[T Integer](start T, size int) []T {
 	return arr
 }
 
+// MaxElement returns the largest element in slice. ok is false if slice is empty.
 func MaxElement[T cmp.Ordered](slice []T) (T, bool) {
 	if len(slice) == 0 {
 		var zero T
@@ -60,6 +66,7 @@ func MaxElement[T cmp.Ordered](slice []T) (T, bool) {
 	return max, true
 }
 
+// MinElement returns the smallest element in slice. ok is false if slice is empty.
 func MinElement[T cmp.Ordered](slice []T) (T, bool) {
 	if len(slice) == 0 {
 		var zero T
@@ -75,6 +82,7 @@ func MinElement[T cmp.Ordered](slice []T) (T, bool) {
 	return min, true
 }
 
+// PrefixSum returns a new slice where each element is the cumulative sum of slice up to and including that index. Returns nil for an empty slice.
 func PrefixSum[T Number](slice []T) []T {
 	if len(slice) == 0 {
 		return nil;
