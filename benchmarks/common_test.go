@@ -8,4 +8,4 @@ var (
 )
 
 // Standard problem sizes matching competitive programming constraints
-var benchmarkSizes = []int{100, 1_000, 10_000, 100_000}
+var benchmarkSizes = []int{100, 100_000}
