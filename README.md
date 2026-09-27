@@ -1,4 +1,4 @@
-[![Sourcegraph](https://sourcegraph.com/github.com/stlgo/-/badge.svg)](https://sourcegraph.com/github.com/mohitjoshi-hey/stlgo?badge)
+
 
 <div align="center">
   <img src="/assets/logo.png" width="75%"/>
