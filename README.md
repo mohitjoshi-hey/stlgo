@@ -8,17 +8,59 @@
 
 High-performance, generic data structures and algorithms for Go 1.26+.
 
-`stlgo` is built for competitive programming, low-latency applications, and high-throughput systems engineering. It provides modern, type-safe data structures and algorithms designed around Go generics, contiguous memory layouts, CPU cache locality, and zero-allocation semantics.
+`stlgo` is built for competitive programming, low-latency applications, and
+high-throughput systems engineering. It provides modern, type-safe data
+structures and algorithms designed around Go generics, contiguous memory
+layouts, CPU cache locality, and predictable allocation behavior.
+
+---
+
+## Table of Contents
+
+- [Design Philosophy](#design-philosophy)
+- [Installation](#installation)
+- [Package Overview](#package-overview)
+- [Containers](#containers)
+  - [Stack](#stack)
+  - [Queue](#queue)
+  - [Deque](#deque)
+- [Algorithms](#algorithms)
+  - [Search](#search-algorithms)
+  - [Sorting](#sorting-algorithms)
+  - [Numeric](#numeric-algorithms)
+  - [Math](#mathematical-algorithms)
+  - [Permutations](#permutation-algorithms)
+- [Testing](#testing)
+- [Fuzz Testing](#fuzz-testing)
+- [Benchmarks](#benchmarks)
+- [Published Benchmark Results](#published-benchmark-results)
+- [Troubleshooting](#troubleshooting)
+- [Requirements](#requirements)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
+- [License](#license)
+- [Credits](#credits)
 
 ---
 
 ## Design Philosophy
 
-* **Contiguous Memory & Cache Locality:** Algorithms operate directly on native Go slices, and containers prioritize slice-backed storage over pointer-heavy node graphs, maximizing CPU L1/L2 cache hits.
-* **Zero-Allocation & Inlinable:** Functions avoid dynamic interface boxing (`interface{}` / `any`) by leveraging `cmp.Ordered`, `comparable`, and numeric type constraints, enabling compiler inlining and vectorization without heap escapes.
-* **GC-Leak Free:** Container pop/dequeue operations explicitly zero retired slots (`var zero T`), ensuring stale references are immediately eligible for garbage collection.
-* **Bring Your Own Concurrency (BYOC):** Containers do not include internal mutexes by default. This eliminates synchronization overhead in single-threaded, competitive programming, and critical-path loops.
-* **Predictable Complexity:** Every algorithm and container operation carries strict time and space complexity guarantees matching C++ STL counterparts, verified against the [benchmark results](#benchmarks) below.
+- **Contiguous Memory & Cache Locality** — Algorithms operate directly on
+  native Go slices, while containers prioritize slice-backed storage over
+  pointer-heavy node graphs.
+- **Low Allocation** — Hot-path operations are designed to avoid unnecessary
+  allocations. Operations that require container growth may allocate, while
+  steady-state operations can achieve zero allocations.
+- **GC-Friendly Containers** — Container pop/dequeue operations explicitly
+  zero retired slots (`var zero T`) so references held by removed elements do
+  not unnecessarily remain live.
+- **Bring Your Own Concurrency (BYOC)** — Containers do not include internal
+  mutexes by default. This avoids synchronization overhead when concurrency is
+  not required.
+- **Predictable Complexity** — Operations provide explicit time-complexity
+  guarantees inspired by C++ STL-style interfaces.
+- **Generic & Type-Safe** — APIs use Go generics instead of `interface{}` /
+  `any`-based APIs wherever practical.
 
 ---
 
@@ -28,7 +70,46 @@ High-performance, generic data structures and algorithms for Go 1.26+.
 go get github.com/mohitjoshi-hey/stlgo
 ```
 
-## Quick Start & Usage
+Then import the packages you need:
+
+```go
+import (
+    "github.com/mohitjoshi-hey/stlgo/algo"
+    "github.com/mohitjoshi-hey/stlgo/container"
+)
+```
+
+---
+
+## Package Overview
+
+### Algorithms
+
+| Package             | Functions                                                                |
+| -------------------- | ------------------------------------------------------------------------ |
+| `algo/search`        | `LowerBound`, `UpperBound`, `BinarySearch`, `Find`, `FindIf`             |
+| `algo/sort`          | `Sort`, `DescSort`, `SortBy`, `IsSorted`, `NthElement`                   |
+| `algo/numeric`       | `Sum`, `Product`, `Iota`, `MaxElement`, `MinElement`, `PrefixSum`        |
+| `algo/math`          | `GCD`, `LCM`, `IsPrime`, `IsEven`, `IsOdd`, `Max`, `Min`, `Clamp`, `Abs` |
+| `algo/permutations`  | `NextPermutation`, `PrevPermutation`                                     |
+
+### Containers
+
+| Container | Description                                    |
+| --------- | ----------------------------------------------- |
+| `Stack`   | Slice-backed LIFO container                     |
+| `Queue`   | FIFO container with sliding-window buffering    |
+| `Deque`   | Double-ended queue backed by a circular buffer  |
+
+---
+
+## Containers
+
+### Stack
+
+`Stack` provides LIFO (Last-In, First-Out) behavior.
+
+**Usage**
 
 ```go
 package main
@@ -36,118 +117,626 @@ package main
 import (
 	"fmt"
 
-	"github.com/mohitjoshi-hey/stlgo/algo"
+	"github.com/mohitjoshi-hey/stlgo/container"
 )
 
 func main() {
-	// Binary Search & Bounds (O(log N))
-	sorted := []int{10, 20, 20, 30, 40}
-	lb := algo.LowerBound(sorted, 20) // 1
-	ub := algo.UpperBound(sorted, 20) // 3
-	idx, ok := algo.BinarySearch(sorted, 30) // (3, true)
-	fmt.Printf("LB: %d, UB: %d, Found at: %d (ok: %t)\n", lb, ub, idx, ok)
+	stack := container.NewStack[int]()
 
-	// Unsorted Search & Custom Predicates (O(N))
-	items := []string{"apple", "banana", "cherry"}
-	pos, _ := algo.Find(items, "banana") // (1, true)
-	firstC, _ := algo.FindIf(items, func(s string) bool {
-		return len(s) > 5 // "banana"
-	})
-	fmt.Printf("Find: %d, FindIf: %d\n", pos, firstC)
+	stack.Push(10)
+	stack.Push(20)
+	stack.Push(30)
 
-	// Numeric Utilities
-	nums := []int{1, 2, 3, 4, 5}
-	sum := algo.Sum(nums)              // 15
-	prefix := algo.PrefixSum(nums)     // [1, 3, 6, 10, 15]
-	maxVal, _ := algo.MaxElement(nums) // (5, true)
-	seq := algo.Iota(10, 4)            // [10, 11, 12, 13]
+	fmt.Println(stack.Len())
+	// 3
 
-	fmt.Printf("Sum: %d, Prefix: %v, Max: %d, Iota: %v\n", sum, prefix, maxVal, seq)
+	value, ok := stack.Pop()
+	fmt.Println(value, ok)
+	// 30 true
+
+	value, ok = stack.Peek()
+	fmt.Println(value, ok)
+	// 20 true
 }
 ```
 
-## Package Overview
+---
 
-### 1. Algorithms (`algo`)
+### Queue
 
-The `algo` package exposes a facade over specialized subpackages:
+`Queue` provides FIFO (First-In, First-Out) behavior.
 
-| **Subpackage** | **Available Functions** | **Details** |
-|---|---|---|
-| **`algo/search`** | `LowerBound`, `UpperBound`, `BinarySearch`, `Find`, `FindIf` | $O(\log N)$ binary searching for `cmp.Ordered` slices and linear scans for `comparable` / arbitrary types. |
-| **`algo/sort`** | `Sort`, `DescSort`, `SortBy`, `IsSorted`, `NthElement` | Type-safe in-place sorting and $O(N)$ Introselect order statistics. |
-| **`algo/numeric`** | `Sum`, `Product`, `Iota`, `MaxElement`, `MinElement`, `PrefixSum` | Generic arithmetic, array generation, and extrema extraction. |
-| **`algo/math`** | `GCD`, `LCM`, `IsPrime`, `IsEven`, `IsOdd`, `Max`, `Min`, `Clamp`, `Abs` | Common competitive programming mathematical utilities. |
-| **`algo/permutations`** | `NextPermutation`, `PrevPermutation` | $O(N)$ lexicographic permutation stepping via in-place reversal. |
+**Usage**
 
-### 2. Containers (`container`)
+```go
+package main
 
-- **`Stack`**: Contiguous slice-backed LIFO stack with minimal reallocations.
-- **`Queue`**: FIFO queue using a sliding window buffer with amortized memory compaction.
-- **`Deque`**: Double-ended queue backed by a circular ring buffer, supporting $O(1)$ amortized push/pop from both ends with automatic unwrap-on-grow.
+import (
+	"fmt"
 
-## Benchmarks
+	"github.com/mohitjoshi-hey/stlgo/container"
+)
 
-Median of 10 runs (`go test -run="^$" -bench="." -benchmem -count=10 ./benchmarks`), measured on Windows.
+func main() {
+	queue := container.NewQueue[int]()
 
-<img width="1088" height="857" alt="image" src="https://github.com/user-attachments/assets/09f58f2b-f0ac-4372-827f-46b7158eb740" />
+	queue.Enqueue(10)
+	queue.Enqueue(20)
+	queue.Enqueue(30)
 
-Full raw data (all 10 runs per benchmark) and the theoretical-complexity breakdown are tracked in `stlgo_benchmarks.xlsx`.
+	fmt.Println(queue.Len())
+	// 3
 
-## Testing & Benchmarks
+	value, ok := queue.Dequeue()
+	fmt.Println(value, ok)
+	// 10 true
 
-Run the complete test suite:
+	value, ok = queue.Front()
+	fmt.Println(value, ok)
+	// 20 true
+}
+```
 
-```bash
+---
+
+### Deque
+
+`Deque` is a double-ended queue that supports insertion and removal from both
+ends.
+
+**Usage**
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/mohitjoshi-hey/stlgo/container"
+)
+
+func main() {
+	deque := container.NewDeque[int]()
+
+	deque.PushBack(20)
+	deque.PushFront(10)
+	deque.PushBack(30)
+
+	fmt.Println(deque.Len())
+	// 3
+
+	value, ok := deque.Front()
+	fmt.Println(value, ok)
+	// 10 true
+
+	value, ok = deque.Back()
+	fmt.Println(value, ok)
+	// 30 true
+
+	value, ok = deque.PopFront()
+	fmt.Println(value, ok)
+	// 10 true
+
+	value, ok = deque.PopBack()
+	fmt.Println(value, ok)
+	// 30 true
+}
+```
+
+---
+
+## Algorithms
+
+### Search Algorithms
+
+Package: `github.com/mohitjoshi-hey/stlgo/algo/search`
+(also exposed at the top-level `algo` package)
+
+**LowerBound** — returns the first position where an element is greater than
+or equal to the target.
+
+```go
+values := []int{10, 20, 20, 30, 40}
+index := algo.LowerBound(values, 20)
+fmt.Println(index)
+// 1
+```
+
+**UpperBound** — returns the first position where an element is greater than
+the target.
+
+```go
+values := []int{10, 20, 20, 30, 40}
+index := algo.UpperBound(values, 20)
+fmt.Println(index)
+// 3
+```
+
+**BinarySearch** — searches for an element in a sorted slice.
+
+```go
+values := []int{10, 20, 30, 40}
+index, found := algo.BinarySearch(values, 30)
+fmt.Println(index, found)
+// 2 true
+```
+
+**Find** — performs a linear search.
+
+```go
+values := []string{"apple", "banana", "cherry"}
+index, found := algo.Find(values, "banana")
+fmt.Println(index, found)
+// 1 true
+```
+
+**FindIf** — searches using a custom predicate.
+
+```go
+values := []string{"apple", "banana", "cherry"}
+index, found := algo.FindIf(values, func(value string) bool {
+	return len(value) > 5
+})
+fmt.Println(index, found)
+// 1 true
+```
+
+---
+
+### Sorting Algorithms
+
+Package: `github.com/mohitjoshi-hey/stlgo/algo`
+
+**Sort** — sorts a slice in ascending order.
+
+```go
+values := []int{50, 10, 40, 20, 30}
+algo.Sort(values)
+fmt.Println(values)
+// [10 20 30 40 50]
+```
+
+**DescSort** — sorts a slice in descending order.
+
+```go
+values := []int{50, 10, 40, 20, 30}
+algo.DescSort(values)
+fmt.Println(values)
+// [50 40 30 20 10]
+```
+
+**SortBy** — sorts using a custom comparison function.
+
+```go
+type Person struct {
+	Name string
+	Age  int
+}
+
+people := []Person{
+	{Name: "Alice", Age: 30},
+	{Name: "Bob", Age: 20},
+	{Name: "Charlie", Age: 25},
+}
+
+algo.SortBy(people, func(a, b Person) bool {
+	return a.Age < b.Age
+})
+```
+
+**IsSorted** — checks whether a slice is already sorted.
+
+```go
+values := []int{10, 20, 30, 40}
+fmt.Println(algo.IsSorted(values))
+// true
+```
+
+**NthElement** — rearranges a slice so that the element at a specified
+position is the same element that would appear there after sorting, without
+fully sorting the slice.
+
+```go
+values := []int{9, 2, 7, 4, 1, 8, 3}
+algo.NthElement(values, 3)
+fmt.Println(values)
+```
+
+After the operation, `values[3]` contains the element that belongs at index
+`3` in the sorted ordering.
+
+> `NthElement` is useful when you only need an order statistic such as a
+> median, percentile, or kth-smallest element and do not need the entire
+> slice sorted.
+
+---
+
+### Numeric Algorithms
+
+Package: `github.com/mohitjoshi-hey/stlgo/algo`
+
+**Sum**
+
+```go
+values := []int{1, 2, 3, 4, 5}
+fmt.Println(algo.Sum(values))
+// 15
+```
+
+**Product**
+
+```go
+values := []int{1, 2, 3, 4, 5}
+fmt.Println(algo.Product(values))
+// 120
+```
+
+**PrefixSum**
+
+```go
+values := []int{1, 2, 3, 4, 5}
+fmt.Println(algo.PrefixSum(values))
+// [1 3 6 10 15]
+```
+
+**Iota**
+
+```go
+values := algo.Iota(10, 5)
+fmt.Println(values)
+// [10 11 12 13 14]
+```
+
+**MaxElement**
+
+```go
+values := []int{10, 50, 20, 40, 30}
+value, found := algo.MaxElement(values)
+fmt.Println(value, found)
+// 50 true
+```
+
+**MinElement**
+
+```go
+values := []int{10, 50, 20, 40, 30}
+value, found := algo.MinElement(values)
+fmt.Println(value, found)
+// 10 true
+```
+
+---
+
+### Mathematical Algorithms
+
+Package: `github.com/mohitjoshi-hey/stlgo/algo`
+
+**GCD**
+
+```go
+fmt.Println(algo.GCD(48, 18))
+// 6
+```
+
+**LCM**
+
+```go
+fmt.Println(algo.LCM(12, 18))
+// 36
+```
+
+**IsPrime**
+
+```go
+fmt.Println(algo.IsPrime(97))
+// true
+
+fmt.Println(algo.IsPrime(100))
+// false
+```
+
+**IsEven / IsOdd**
+
+```go
+fmt.Println(algo.IsEven(10))
+// true
+
+fmt.Println(algo.IsOdd(7))
+// true
+```
+
+**Max / Min**
+
+```go
+fmt.Println(algo.Max(10, 20, 5, 30))
+// 30
+
+```
+
+**Clamp**
+
+```go
+fmt.Println(algo.Clamp(150, 0, 100))
+// 100
+```
+
+**Abs**
+
+```go
+fmt.Println(algo.Abs(-42))
+// 42
+```
+
+---
+
+### Permutation Algorithms
+
+Package: `github.com/mohitjoshi-hey/stlgo/algo`
+
+**NextPermutation** — transforms a sequence into its next lexicographical
+permutation.
+
+```go
+values := []int{1, 2, 3}
+ok := algo.NextPermutation(values)
+fmt.Println(values, ok)
+// [1 3 2] true
+```
+
+**PrevPermutation** — transforms a sequence into its previous lexicographical
+permutation.
+
+```go
+values := []int{3, 2, 1}
+ok := algo.PrevPermutation(values)
+fmt.Println(values, ok)
+// [3 1 2] true
+```
+
+---
+
+## Testing
+
+`stlgo` includes unit tests, fuzz tests, and benchmarks. All three are
+separate workflows.
+
+### Unit Tests
+
+Run the complete unit-test suite:
+
+```powershell
+go test ./...
+```
+
+Run with verbose output:
+
+```powershell
 go test -v ./...
 ```
 
-Run tests with data race detection:
+Run tests for a specific package:
 
-```bash
+```powershell
+go test ./container/...
+```
+
+Run a specific test:
+
+```powershell
+go test ./container -run TestStack
+```
+
+Run the complete test suite with the race detector:
+
+```powershell
+go test -race ./...
+```
+
+Verbose race testing:
+
+```powershell
 go test -v -race ./...
 ```
 
-Run benchmarks:
+---
 
-```bash
-go test -bench=. -benchmem ./...
+## Fuzz Testing
+
+Go's built-in fuzzing framework is used for fuzz tests.
+
+List available fuzz tests:
+
+```powershell
+go test ./... -list "Fuzz"
 ```
+
+Run a specific fuzz test:
+
+```powershell
+go test ./path/to/package -run=^$ -fuzz=FuzzName
+```
+
+For example:
+
+```powershell
+go test ./container -run=^$ -fuzz=FuzzStack -fuzztime=30s
+```
+
+---
+
+## Benchmarks
+
+The benchmark suite is located in:
+
+```text
+benchmarks/
+```
+Run benchmarks against the `benchmarks` package explicitly:
+
+```powershell
+go test -run="^$" -bench="." -benchmem ./benchmarks
+```
+
+### Run Benchmarks From Inside `benchmarks/`
+
+```powershell
+cd benchmarks
+go test -run="^$" -bench="." -benchmem .
+```
+
+### Run a Specific Benchmark Group
+
+| Group       | Command                                                        |
+| ----------- | --------------------------------------------------------------- |
+| Deque       | `go test -bench="BenchmarkDeque" -benchmem ./benchmarks`         |
+| Queue       | `go test -bench="BenchmarkQueue" -benchmem ./benchmarks`         |
+| Stack       | `go test -bench="BenchmarkStack" -benchmem ./benchmarks`         |
+| Search      | `go test -bench="BenchmarkSearch" -benchmem ./benchmarks`        |
+| Numeric     | `go test -bench="BenchmarkNumeric" -benchmem ./benchmarks`       |
+| Math        | `go test -bench="BenchmarkMath" -benchmem ./benchmarks`          |
+| Permutation | `go test -bench="BenchmarkPermutation" -benchmem ./benchmarks`   |
+| Sort        | `go test -bench="BenchmarkSort" -benchmem ./benchmarks`          |
+
+
+
+## Published Benchmark Results
+
+The published benchmark results are based on 5 runs.
+<img width="1207" height="761" alt="image" src="https://github.com/user-attachments/assets/de82cbb3-69c9-49d5-8395-ee118391823f" />
+
+
+
+## Troubleshooting
+
+### `no Go files in ...\stlgo`
+
+If you see:
+
+```text
+no Go files in C:\...\stlgo
+```
+
+while trying to run benchmarks, make sure you are explicitly targeting the
+benchmark package:
+
+```powershell
+go test -run="^$" -bench="." -benchmem ./benchmarks
+```
+
+Do **not** use the repository root as the benchmark package:
+
+```powershell
+go test -bench="." .
+```
+
+unless the repository root itself contains Go source files belonging to a Go
+package.
+
+This error is Go's standard message for "zero package arguments were
+received," and it usually means the pattern (`./benchmarks`) was dropped or
+corrupted somewhere in the command — for example by a copy/paste that
+introduced a smart quote or invisible character. Retype the command instead
+of pasting it if it recurs.
+
+### Running Benchmarks From the `benchmarks` Directory
+
+If your terminal is already inside `stlgo\benchmarks`, use:
+
+```powershell
+go test -run="^$" -bench="." -benchmem .
+```
+
+not:
+
+```powershell
+go test -run="^$" -bench="." -benchmem ./benchmarks
+```
+
+because `./benchmarks` from inside the `benchmarks` directory would refer to
+a nested directory that normally does not exist.
+
+
+## Requirements
+
+- **Go 1.26+**
+
+---
 
 ## Roadmap
 
 ### Current
 
 - [x] Generic `Stack`
-- [x] Generic `Queue` (sliding window with amortized compaction)
-- [x] Generic `Deque` (circular ring buffer)
-- [x] Complete `algo/search` (`LowerBound`, `UpperBound`, `BinarySearch`, `Find`, `FindIf`)
-- [x] Complete `algo/numeric` (`Sum`, `Product`, `Iota`, `MaxElement`, `MinElement`, `PrefixSum`)
-- [x] Complete `algo/sort` (`Sort`, `DescSort`, `SortBy`, `IsSorted`, `NthElement`)
-- [x] Complete `algo/math` (`GCD`, `LCM`, `IsPrime`, `Clamp`, etc.)
+- [x] Generic `Queue`
+- [x] Generic `Deque`
+- [x] Complete `algo/search`
+- [x] Complete `algo/numeric`
+- [x] Complete `algo/sort`
+- [x] Complete `algo/math`
 - [x] `NextPermutation` / `PrevPermutation`
-- [x] Unit test suites with edge case coverage
-- [x] Benchmark suite with tracked complexity guarantees
+- [x] Unit test suites with edge-case coverage
+- [x] Fuzz testing
+- [x] Dedicated benchmark suite
+- [x] Benchmark result tracking
+- [x] Complexity documentation
 
 ### In Progress / Planned
 
-- [ ] Generic `PriorityQueue` (Binary Heap with $O(1)$ peek, $O(\log N)$ push/pop)
-- [ ] Generic `Set` (Hash Set backed by `map[T]struct{}`)
-- [ ] Disjoint Set Union (DSU with path compression and union by rank)
-- [ ] Fenwick Tree (Binary Indexed Tree) and Segment Tree
+- [ ] Generic `PriorityQueue` (Binary Heap)
+- [ ] Generic `Set` (`map[T]struct{}` backed)
+- [ ] Disjoint Set Union (DSU)
+- [ ] Fenwick Tree (Binary Indexed Tree)
+- [ ] Segment Tree
 - [ ] Formal benchmark suite against standard library `container/heap`
+- [ ] Additional cache-conscious data structures
+- [ ] Additional algorithms inspired by the C++ STL
 
-## Requirements
+---
 
-- **Go 1.26+**
+## Contributing
+
+Contributions are welcome. Before opening a pull request, ensure that:
+
+```powershell
+go test ./...
+```
+
+passes successfully.
+
+For concurrency-sensitive changes:
+
+```powershell
+go test -race ./...
+```
+
+For fuzz-sensitive code:
+
+```powershell
+go test ./path/to/package -run=^$ -fuzz=FuzzName -fuzztime=30s
+```
+
+For performance-sensitive changes:
+```powershell
+go test -run="^$" -bench="." -benchmem -count=10 ./benchmarks
+```
+
+When submitting performance-related changes, include benchmark results when
+possible.
+
+---
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the
+[LICENSE](LICENSE) file for details.
+
+---
 
 ## Credits
 
-The image used in this project was sourced from **https://github.com/MariaLetta/free-gophers-pack**.
+The image used in this project was sourced from
+[MariaLetta/free-gophers-pack](https://github.com/MariaLetta/free-gophers-pack).
 
-📷 Image by **[MariaLetta](https://github.com/MariaLetta)**, used under the **[Creative Commons (CC0-1.0)](https://github.com/MariaLetta/free-gophers-pack?tab=CC0-1.0-1-ov-file) license.**
-
+📷 Image by [MariaLetta](https://github.com/MariaLetta), used under the
+[Creative Commons (CC0-1.0)](https://github.com/MariaLetta/free-gophers-pack?tab=CC0-1.0-1-ov-file)
+license.
